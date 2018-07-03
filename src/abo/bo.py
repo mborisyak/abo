@@ -7,6 +7,8 @@ from scipy.optimize import fmin_l_bfgs_b
 
 from .acq import *
 
+from tqdm import tqdm_notebook
+
 
 def transform(x, space):
   return (x - space[None, :, 0]) / (space[:, 1] - space[:, 0])[None, :]
@@ -15,7 +17,9 @@ def reverse_transform(x, space):
   return x * (space[:, 1] - space[:, 0])[None, :] + space[None, :, 0]
 
 
-def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None, n_multi_start=100):
+def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None, n_multi_start=100, show_progress=True):
+  xrange = (lambda title, n: tqdm_notebook(range(n), postfix=title)) if show_progress else (lambda title, n: range(n))
+
   space = np.array(space)
 
   if model is None:
@@ -23,20 +27,20 @@ def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None, n
              Matern(1.0, nu=1.5, length_scale_bounds=[1.0e-3, 1.0e+3])
 
     model = GaussianProcessRegressor(
-        kernel=kernel,
-        normalize_y=False, noise=None,
-        n_restarts_optimizer=2
+      kernel=kernel,
+      normalize_y=False, noise=None,
+      n_restarts_optimizer=2
     )
 
   known_points = []
   known_values = []
   cost = []
 
-  for i in range(n_iters):
+  for i in xrange('BO iteration', n_iters):
     acq = acq_function(model, known_points, known_values)
 
     candidates = []
-    for _ in range(n_multi_start):
+    for _ in xrange('acquisition', n_multi_start):
       x0 = np.random.uniform(size=(ndim,))
 
       x, f, _ = fmin_l_bfgs_b(
@@ -66,7 +70,8 @@ def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None, n
 
     yield model, acq, space, known_points, known_values, cost
 
-def rfbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, n_samples=int(1.0e+5), model=None):
+def rfbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, n_samples=int(1.0e+5), model=None, show_progress=True):
+  xrange = (lambda title, n: tqdm_notebook(range(n), postfix=title)) if show_progress else (lambda title, n: range(n))
   space = np.array(space)
 
   if model is None:
@@ -76,7 +81,7 @@ def rfbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, n_samples=int
   known_values = []
   cost = []
 
-  for i in range(n_iters):
+  for i in xrange('BO iteration', n_iters):
     acq = acq_function(model, known_points, known_values)
 
     candidates = np.random.uniform(size=(n_samples, ndim,))
