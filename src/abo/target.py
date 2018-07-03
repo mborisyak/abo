@@ -33,8 +33,8 @@ def train(discriminator_factory, X_true_train, X_gen_train):
 def validate(discriminator, X_true_val, X_gen_val):
   return get_losses(discriminator, X_true_val, X_gen_val)
 
-def expand(X, N, params):
-  return np.vstack([ X, get_data(n_samples=N, params=params) ])
+def expand(X, N, params, param_names):
+  return np.vstack([ X, get_data(n_samples=N, params=params, param_names=param_names) ])
 
 def estimate_wassershtein(pos1, neg1, pos2, neg2):
   s1 = np.concatenate([pos1, neg1], axis=0)
@@ -53,7 +53,7 @@ def estimate_wassershtein(pos1, neg1, pos2, neg2):
 
 
 def jensen_shannon(
-  params, discriminator_factory, X_true_train, X_true_val,
+  params, param_names, discriminator_factory, X_true_train, X_true_val,
   N_init=128, N_step=64, train_delta=2, plot=False
 ):
 
@@ -139,8 +139,8 @@ def jensen_shannon(
       break
     else:
       current_size += N_step
-      X_gen_train = expand(X_gen_train, N_step, params)
-      X_gen_val = expand(X_gen_val, N_step, params)
+      X_gen_train = expand(X_gen_train, N_step, params, param_names)
+      X_gen_val = expand(X_gen_val, N_step, params, param_names)
 
     iteration += 1
 

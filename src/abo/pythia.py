@@ -104,12 +104,20 @@ monash20 = np.array([
   2.2
 ])
 
-param_names3 = param_names20[:3]
-space3 = space20[:3]
-monash3 = monash20[:3]
+param_names1 = param_names20[:3]
+space1 = space20[:3]
+monash1 = monash20[:3]
 
-def get_data(n_samples=2**16, params=monash20, n_workers=1, batch_size=128, seed=123):
-  options = fixed_options + ["%s=%lf" % (k, v) for k, v in zip(param_names20, params)]
+param_names2 = param_names20[3:9]
+space2 = space20[3:9]
+monash2 = monash20[3:9]
+
+param_names3 = param_names20[9:]
+space3 = space20[9:]
+monash3 = monash20[9:]
+
+def get_data(n_samples=2**16, params=monash20, param_names=param_names20, n_workers=8, batch_size=128, seed=123):
+  options = fixed_options + ["%s=%lf" % (k, v) for k, v in zip(param_names, params)]
 
   ### TuneMC detector provides the same features used in TuneMC paper
   detector = pm.utils.TuneMCDetector()
