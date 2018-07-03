@@ -40,6 +40,7 @@ def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None, n
       x0 = np.random.uniform(size=(ndim,))
 
       x, f, _ = fmin_l_bfgs_b(
+        maxiter=1000,
         func=acq,
         x0=x0,
         approx_grad=False,
