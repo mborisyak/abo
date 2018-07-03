@@ -15,7 +15,7 @@ def reverse_transform(x, space):
   return x * (space[:, 1] - space[:, 0])[None, :] + space[None, :, 0]
 
 
-def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None):
+def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None, n_multi_start=100):
   space = np.array(space)
 
   if model is None:
@@ -36,7 +36,7 @@ def gpbo_cycle(ndim, space, target_f, n_iters=10, acq_function=ei, model=None):
     acq = acq_function(model, known_points, known_values)
 
     candidates = []
-    for i in range(1000):
+    for _ in range(n_multi_start):
       x0 = np.random.uniform(size=(ndim,))
 
       x, f, _ = fmin_l_bfgs_b(

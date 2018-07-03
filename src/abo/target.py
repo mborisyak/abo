@@ -53,8 +53,8 @@ def estimate_wassershtein(pos1, neg1, pos2, neg2):
 
 
 def jensen_shannon(
-        params, discriminator_factory, X_true_train, X_true_val,
-        N_init=128, N_step=64, train_delta=2, plot=False
+  params, discriminator_factory, X_true_train, X_true_val,
+  N_init=128, N_step=64, train_delta=2, plot=False
 ):
 
   current_size = N_init
