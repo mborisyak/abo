@@ -2,7 +2,7 @@ import numpy as np
 
 from scipy.stats import wasserstein_distance
 
-from .pythia import get_data
+from .pythia import *
 
 def get_losses(discriminator, x1, x2):
   p1 = discriminator.predict_proba(x1)[:, 1]
@@ -33,9 +33,6 @@ def train(discriminator_factory, X_true_train, X_gen_train):
 def validate(discriminator, X_true_val, X_gen_val):
   return get_losses(discriminator, X_true_val, X_gen_val)
 
-def expand(X, N, params, param_names):
-  return np.vstack([ X, get_data(n_samples=N, params=params, param_names=param_names) ])
-
 def estimate_wassershtein(pos1, neg1, pos2, neg2):
   s1 = np.concatenate([pos1, neg1], axis=0)
   w1 = np.concatenate([
@@ -54,12 +51,14 @@ def estimate_wassershtein(pos1, neg1, pos2, neg2):
 
 def jensen_shannon(
   params, param_names, discriminator_factory, X_true_train, X_true_val,
-  N_init=128, N_step=64, train_delta=2, plot=False
+  N_init=128, N_step=64, train_delta=2, plot=False, seed=123
 ):
 
+  mill = get_mill(params, param_names, batch_size=N_step, seed=seed)
+
   current_size = N_init
-  X_gen_train = get_data(n_samples=N_init, params=params)
-  X_gen_val = get_data(n_samples=4 * N_init, params=params)
+  X_gen_train = sample_mill(mill, N_init)
+  X_gen_val = sample_mill(mill, 4 * N_init)
 
   losses_train_gen_history = []
   losses_train_true_history = []
@@ -139,11 +138,17 @@ def jensen_shannon(
       break
     else:
       current_size += N_step
-      X_gen_train = expand(X_gen_train, N_step, params, param_names)
-      X_gen_val = expand(X_gen_val, N_step, params, param_names)
+      X_gen_train = np.vstack([
+        X_gen_train, sample_mill(mill, N_step)
+      ])
+      X_gen_val = np.vstack([
+        X_gen_val, sample_mill(mill, N_step)
+      ])
 
     iteration += 1
 
+  mill.shutdown()
+
   return current_size, 1 - (
-          0.5 * np.mean(losses_train_true_history[-1]) + 0.5 * np.mean(losses_train_gen_history[-1])
+    0.5 * np.mean(losses_train_true_history[-1]) + 0.5 * np.mean(losses_train_gen_history[-1])
   ) / np.log(2)

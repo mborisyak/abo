@@ -116,7 +116,7 @@ param_names3 = param_names20[9:]
 space3 = space20[9:]
 monash3 = monash20[9:]
 
-def get_data(n_samples=2**16, params=monash20, param_names=param_names20, n_workers=8, batch_size=128, seed=123):
+def get_mill(params=monash20, param_names=param_names20, n_workers=8, batch_size=128, seed=123):
   options = fixed_options + ["%s=%lf" % (k, v) for k, v in zip(param_names, params)]
 
   ### TuneMC detector provides the same features used in TuneMC paper
@@ -127,14 +127,18 @@ def get_data(n_samples=2**16, params=monash20, param_names=param_names20, n_work
     cache_size=n_workers * 2, n_workers=n_workers, seed=seed
   )
 
-  n_batches = n_samples // batch_size + (0 if n_samples % batch_size == 0 else 1)
+  return mill
 
-  ### sampling
-  data = np.vstack([
-    mill.sample()
-    for _ in (range(n_batches))
-  ])
+def sample_mill(mill, n_samples=2**16):
+  batches = []
+  while sum([ b.shape[0] for b in batches ]) < n_samples:
+    batches.append(mill.sample())
 
+  return np.vstack(batches)[:n_samples]
+
+
+def get_data(n_samples=2**16, params=monash20, param_names=param_names20, n_workers=8, batch_size=128, seed=123):
+  mill = get_mill(params, param_names, n_workers, batch_size, seed)
+  result = sample_mill(mill, n_samples)
   mill.terminate()
-
-  return data[:n_samples]
+  return result
