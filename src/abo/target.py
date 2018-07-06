@@ -51,7 +51,7 @@ def estimate_wassershtein(pos1, neg1, pos2, neg2):
 
 def jensen_shannon(
   params, param_names, discriminator_factory, X_true_train, X_true_val,
-  N_init=128, N_step=64, train_delta=2, plot=False, seed=123
+  N_init=128, N_step=64, train_delta=2, plot=False, seed=123, coef=10.0
 ):
 
   mill = get_mill(params, param_names, batch_size=N_step, seed=seed)
@@ -149,6 +149,6 @@ def jensen_shannon(
 
   mill.shutdown()
 
-  return current_size, 1 - (
+  return current_size, coef * (np.log(2) - (
     0.5 * np.mean(losses_train_true_history[-1]) + 0.5 * np.mean(losses_train_gen_history[-1])
-  ) / np.log(2)
+  ))
