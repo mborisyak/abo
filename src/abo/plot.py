@@ -21,7 +21,7 @@ def plot_convergance(title, iteration, known_values, cost):
   plt.scatter(np.cumsum(cost), cum_min(known_values), marker='o', color='green')
   plt.scatter(np.cumsum(cost), known_values, marker='o', color='blue', label='known')
   plt.legend(fontsize=18)
-  plt.savefig("%s_%d.png" % (title, iteration))
+  plt.savefig("%s_%04d.png" % (title, iteration))
   plt.show()
 
 def plot_bo(title, iteration, model, acq, space, known_points, known_values, cost, compare_to=None):
@@ -52,5 +52,5 @@ def plot_bo(title, iteration, model, acq, space, known_points, known_values, cos
     acq_values = np.array([compare_to(x)[0] for x in model_xs])
     plt.plot(xs, -acq_values)
 
-  plt.savefig("%s_%d.png" % (title, iteration))
+  plt.savefig("%s_%04d.png" % (title, iteration))
   plt.show()
